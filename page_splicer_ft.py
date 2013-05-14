@@ -47,7 +47,7 @@ foot = """
 if __name__ == '__main__':
     # fr = open("resource/origin_ft.txt", 'r')
     fr = codecs.open("resource/origin_ft.txt", 'r', encoding='utf-8')
-    fw = codecs.open("resource/output.html", 'w', encoding='utf-8')
+    fw = codecs.open("resource/fairy_tale.html", 'w', encoding='utf-8')
     lines = fr.readlines()
     
     fw.write(head)

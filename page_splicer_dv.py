@@ -182,7 +182,7 @@ if __name__ == '__main__':
             line = resolve_normal_line(line)
             buffered.append(line)
             
-    fw = codecs.open("resource/output_dv.html", 'w', encoding='utf-8')
+    fw = codecs.open("resource/dogs in the vineyard.html", 'w', encoding='utf-8')
     body_content.append("".join(buffered))
     fw.write(template.format(body_content="".join(body_content), nav_content=get_nav_content()))
     
