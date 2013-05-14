@@ -19,7 +19,7 @@ head = """
         }
       </style>
 
-    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="navbar navbar-inverse navbar-fixed-top">
@@ -39,7 +39,7 @@ head = """
 foot = """
 </div>
 </div>
-<script src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js"></script>
 </body>
 """
 
