@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import urllib
+from collections import Counter
 
 def getSoup(url) :
     f= urllib.urlopen(url)
@@ -22,11 +23,15 @@ def getInfo() :
     qmap = {"class": "listlink"}
     max_page = soup.find("a", qmap).text
     max_page = int(max_page)
+    
     list = []
+    user_count = {}
+   
     for page_num in xrange(1,max_page+1):
         print page_num, "="*10
         soup = getSoup("http://noah.kaist.ac.kr/Circle/HAJE/seminar/1d1p?page="+str(page_num))
         rows = soup.find("table").findAll("tr")
+        
         for row in rows[1:]:
             cols = row.findAll('td')
             subject= cols[1].text
@@ -38,4 +43,10 @@ def getInfo() :
             print  article.__str__().encode('utf8')
         print page_num, "="*10
     print "max_page", max_page
+    
+    count_list = []
+    for a in list:
+        count_list.append(a.writer)
+    print Counter(count_list)
 
+getInfo()
