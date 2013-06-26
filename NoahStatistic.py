@@ -34,12 +34,27 @@ def getInfo() :
         soup = getSoup("http://noah.kaist.ac.kr/Circle/HAJE/seminar/1d1p?page="+str(page_num))
         rows = soup.find("table").findAll("tr")
         
+        currName = None
+        currHit = 0
+        currDate = None
+        maxName = 0
+        maxHit = 0
+        
         for row in rows[1:]:
             cols = row.findAll('td')
             subject= cols[1].text
             subject= subject.split('\n')
+            
+            if currName is not subject[1]:
+                if maxHit < currHit:
+                    maxHit=currHit
+                    maxName=currName
+                currName = subject[1]
+                currHit = 1
+                
             writer= cols[2].text
             time = cols[3].text
+            
             hit = cols[4].text
             article = Article(subject[1],subject[4][1:-1], writer, time, hit)
             list.append(article)
