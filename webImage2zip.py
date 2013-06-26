@@ -1,10 +1,13 @@
 """
-dumpimages.py
-    Downloads all the images on the supplied URL, and saves them to the
-    specified output file ("/test/" by default)
+webImage2zip.py
+    Downloads all the images on the supplied URL which is the first page of manga, comic. 
+    and saves them to the specified directory as zip file. 
 
 Usage:
-    python dumpimages.py http://example.com/ [output]
+    first argument : the url of the first page you want to downlaod. 
+    comma separated input will be resolved as multiple input.   
+    second argument : target directory.  
+    python "www.abcd.com/some_comic_or_manga/1, www.abcd.com/other_comic_or_manga/1" "c://mangaOrComic/" 
 """
 
 from BeautifulSoup import BeautifulSoup as bs
