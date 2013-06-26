@@ -37,7 +37,7 @@ class SiteCrawler():
     """must override """
     def _getNextPageUrl(self):
         pass
-    
+        
     """optional override """
     def getTitle(self):
         return ''.join(c for c in self.parsed[2] if c in SiteCrawler.valid_chars)
@@ -82,6 +82,10 @@ class CwH2R(SiteCrawler):
         
     def _getNextPageUrl(self):
         pass
+    
+    def getTitle(self):
+        return "_".join(self.curr_page_url.split("/")[-3,-2])
+    
 class CwEH(SiteCrawler):
     def _getImageSourceUrl(self):
         pass
