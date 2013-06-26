@@ -10,13 +10,9 @@ Usage:
 from BeautifulSoup import BeautifulSoup as bs
 import urlparse
 from urllib2 import urlopen
-from urllib import urlretrieve
-import os
-import sys
-from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
-import zlib
+import sys,getopt,os
+from zipfile import ZipFile
 from cStringIO import StringIO
-from urllib2 import urlopen
 from os import path
 import string
 
@@ -100,23 +96,19 @@ class CwGM(SiteCrawler):
 class CwDummy(SiteCrawler):
     def __init__(self):
         SiteCrawler.__init__(self, "http://noah.kaist.ac.kr/Circle/HAJE/seminar/1d1p")
-        self.dummyUrl = ["/static/thumbs_desktop/547160/12_0.png", 
+        self.dummyUrl = ["/static/thumbs_desktop/547160/12_0.png",
                          "/static/thumbs_desktop/547160/12_1.png",
                          "/static/thumbs_desktop/547160/12_2.png"
                          ]
     
     def _getImageSourceUrl(self):
-        if self.page_count-1 < self.dummyUrl.__len__():
-            return self.dummyUrl[self.page_count-1]
+        if self.page_count - 1 < self.dummyUrl.__len__():
+            return self.dummyUrl[self.page_count - 1]
         
     
     def _getNextPageUrl(self):
-        if self.page_count  < self.dummyUrl.__len__():
+        if self.page_count < self.dummyUrl.__len__():
             return self.first_page_url
-
-
-def getImageFormSrc(src):
-    pass
 
 def crawlImg2Zip(crawler, target_dir):
     buf = StringIO()
@@ -126,7 +118,7 @@ def crawlImg2Zip(crawler, target_dir):
         image = urlopen(img_url)
         print "imgUrl : ", img_url
         ext = img_url.split(".")[-1]
-        fname= path.basename("%03d.%s" % (crawler.getCurrentPageNumber(),ext))
+        fname = path.basename("%03d.%s" % (crawler.getCurrentPageNumber(), ext))
         zip_file.writestr(fname, image.read())
     zip_file.close()
     
@@ -136,9 +128,24 @@ def crawlImg2Zip(crawler, target_dir):
     output.close()
     buf.close()
 
-def main(url, out_folder="/test/"):
-    os.path.isdir(out_folder)
-    crawlImg2Zip(CwDummy(), out_folder)  
+def crawlerFactory(first_page_url):
+    if first_page_url.find("noah"):
+        return CwDummy()    
+    else:
+        pass
+    
+    
+def main(argv):
+    target_urls = argv[0].strip().split(",")
+    if len(argv) == 2:
+        target_dir = argv[1]
+    else:
+        target_dir = os.getcwd()
+        
+    for url in target_urls:
+        crawlImg2Zip(crawlerFactory(url), target_dir)
+    
+    #crawlImg2Zip(CwDummy(), out_folder)  
 
 if __name__ == "__main__":
-    main("asdfasdf", "d://var/")
+    main(sys.argv[1:])
