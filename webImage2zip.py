@@ -148,14 +148,19 @@ def crawlerFactory(first_page_url):
     
 from Tkinter import Tk
 from tkFileDialog import askdirectory
+import thread
 
 def main(argv):
     if len(argv) == 0:
         Tk().withdraw()
         print "interactive mode"
-        filename = askdirectory()
+        target_dir = askdirectory()
+        print "directory : ",  target_dir
+        while True :
+            url = raw_input("give me url : ")
+            thread.start_new_thread(crawlImg2Zip, (crawlerFactory(url),target_dir) )    
         
-        print(filename)
+        
     else:
         target_urls = argv[0].strip().split(",")
         if len(argv) == 2:
