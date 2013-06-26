@@ -24,26 +24,31 @@ class SiteCrawler():
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
     
     def __init__(self, first_page_url):
+        """it can be that constructor throw exception, if the given url is uncomphrensible"""
         self.page_count = 1
         self.first_page_url = first_page_url
         self.curr_page_soup = bs(urlopen(first_page_url))
         self.curr_page_url = first_page_url
         self.parsed = list(urlparse.urlparse(first_page_url))
     
-    """must override """
+    
     def _getImageSourceUrl(self):
+        """must override """
         pass
     
-    """must override """
+    
     def _getNextPageUrl(self):
+        """must override """
         pass
-        
-    """optional override """
+       
+    
     def getTitle(self):
+        """optional override """
         return ''.join(c for c in self.parsed[2] if c in SiteCrawler.valid_chars)
         
-    """return a next page url string. if there are not, return None"""
+    
     def jumpToNextPage(self):
+        """return a next page url string. if there are not, return None"""
         url = self._getNextPageUrl()
         if not url:
             return None
@@ -141,16 +146,30 @@ def crawlerFactory(first_page_url):
     else:
         pass
     
-    
+from Tkinter import Tk
+from tkFileDialog import askdirectory
+
 def main(argv):
-    target_urls = argv[0].strip().split(",")
-    if len(argv) == 2:
-        target_dir = argv[1]
-    else:
-        target_dir = os.getcwd()
+    if len(argv) == 0:
+        Tk().withdraw()
+        print "interactive mode"
+        filename = askdirectory()
         
-    for url in target_urls:
-        crawlImg2Zip(crawlerFactory(url), target_dir)
+        print(filename)
+    else:
+        target_urls = argv[0].strip().split(",")
+        if len(argv) == 2:
+            target_dir = argv[1]
+        else:
+            target_dir = os.getcwd()
+            
+        for url in target_urls:
+            try:
+                crawlImg2Zip(crawlerFactory(url), target_dir)
+            except Exception as e:
+                print "FAIL : ", url
+                print e
+            
     
     #crawlImg2Zip(CwDummy(), out_folder)  
 
