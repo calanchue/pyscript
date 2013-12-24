@@ -19,19 +19,9 @@ class IRCLogger(irc.IRCClient):
     def got_names(self,nicklist):
       print nicklist
 
-    def callAll(self, nicklist, message):
+    def callAll(self, nicklist, message, user):
       #self.sendline(' '.join(nicklist))
-      self.msg(self.CHANNEL, ' '.join(nicklist))
-      resolved = []
-      for nick in nicklist:
-        if nick.startswith('@') :
-          resolved.append(nick[1:])
-        else :
-          resolved.append(nick)
-      #self.sendlinve(' '.join(resolved))
-      self.msg(self.CHANNEL, message +" " +' '.join(resolved))
-      
-      print nicklist
+      self.msg(self.CHANNEL, user.split('!')[0]+":"+message +" "+ ' '.join(nicklist))
 
     def privmsg(self, user, channel, message):
       print "[got msg]%s" % message
@@ -40,7 +30,12 @@ class IRCLogger(irc.IRCClient):
 
       if message.startswith("callAll"):             
         print "accepted"
-        self.names("#bottest", message.split(" ",1)[1:]).addCallback(self.callAll, message.split(" ",1)[1:])
+        splited = message.split(" ",1)[1:]
+        if len(splited) > 0 :
+          msg = splited[0]
+        else :
+          msg = ""
+        self.names("#bottest").addCallback(self.callAll, msg, user)
 
       #self.logfile.write(" %s said %s \n" % ( user.split('!')[0], message ))
       #self.logfile.flush()
@@ -48,11 +43,11 @@ class IRCLogger(irc.IRCClient):
     def __init__(self, *args, **kwargs):
       self._namescallback = {}
 
-    def names(self, channel, message):
+    def names(self, channel):
       channel = channel.lower()
       d = defer.Deferred()
       if channel not in self._namescallback:
-        self._namescallback[channel] = ([], [], message)
+        self._namescallback[channel] = ([], [])
 
       self._namescallback[channel][0].append(d)
       self.sendLine("names %s" % channel)
@@ -73,10 +68,10 @@ class IRCLogger(irc.IRCClient):
       if channel not in self._namescallback:
         return
 
-      callbacks, namelist, message = self._namescallback[channel]
+      callbacks, namelist = self._namescallback[channel]
 
       for cb in callbacks:
-        cb.callback(namelist, message)
+        cb.callback(namelist)
 
       del self._namescallback[channel]
 
