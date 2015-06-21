@@ -1,22 +1,3 @@
-#!/usr/bin/python
-#
-# YoutubeVideoDownload -- a small and simple program for downloading Youtube Video File
-# Copyright (C) 2012  Yu Zhou
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 import urllib
 import urllib2
 import sys
@@ -24,7 +5,11 @@ import time
 import argparse
 from os import path
 from urlparse import parse_qs
+from urlparse import urlparse
 from urllib2 import URLError
+import dns.resolver
+from bs4 import BeautifulSoup
+
 
 __author__ = (
     'YU \'Johnny\' ZHOU'
@@ -143,22 +128,35 @@ def __getFileName(videoinfo, type):
         sys.exit('Error : method(__getFileName) invalid argument passing')
     filename = title(videoinfo)+'.'+type
     return filename
-    
-def main():
 
-    parser = argparse.ArgumentParser(description='YoutubeVideoDownload -- a small and simple program for downloading Youtube Video File')
-    parser.add_argument('url', metavar='url', type=str, help='Youtube video URL string with "http://" prefixed')
-    parser.add_argument('type', metavar='type', type=str, help="Downloaded file's type ( webm || mp4 || 3gp || flv)")
-    argvs = parser.parse_args()
-    url_str = argvs.url
-    type = __getFileType(argvs.type)
+
+completed_url = set([])
+added_url = set([])
+ip_count = {}
+lineNum = 0
+
+def getSoup(url) :
+    f= urllib.urlopen(url)
+    s = f.read()
+    f.close()
+    return BeautifulSoup(s)
+
+def resolveVideoURL(url_str, type="mp4"):
+    global lineNum  
+    print str(lineNum),
+    lineNum +=1
+    sys.stdout.write(url_str+","),
+    type = __getFileType(type)
 
     if not type:
-        sys.exit('Error : Unsupported file type %s' % argvs.type)
+        sys.exit('Error : Unsupported file type %s' % type)
 
     video_info = VideoInfo(url_str)
+    #print video_info
     video_url_map = video_file_urls(video_info)
+    #print "video_url_map : " , video_url_map;
     video_title = title(video_info)
+    #print "video_title : ", video_title
     url = ''
 
     for entry in video_url_map:
@@ -171,9 +169,83 @@ def main():
     if url == '' :
         sys.exit('Error : Can not find video file\'s url')
     
-    print url
-    #downloader(url, video_title+'.'+argvs.type)
     
+    
+    
+    #print url
+    #downloader(url, video_title+'.'+argvs.type)
+    parsed_uri = urlparse( url )
+    domain = '{uri.netloc}'.format(uri=parsed_uri)
+    sys.stdout.write(domain+","),
+    #domain="www.naver.com"
+
+    #print "Adresses for %s:" % domain
+    for address_type in ['A']:
+    #for address_type in ['A', 'CNAME']:
+        try:
+            answers = dns.resolver.query(domain, address_type)
+            ip = ""
+            for rdata in answers:
+                ip = rdata
+            print ip           
+            return ip
+        except dns.resolver.NoAnswer:
+            pass
+    #print ""
+
+
+    
+def main():
+    lineNum = 0
+    parser = argparse.ArgumentParser(description='YoutubeVideoDownload -- a small and simple program for downloading Youtube Video File')
+    parser.add_argument('url', metavar='url', type=str, help='Youtube video URL string with "http://" prefixed')
+    parser.add_argument('type', metavar='type', type=str, help="Downloaded file's type ( webm || mp4 || 3gp || flv)")
+    argvs = parser.parse_args()
+    
+    
+    added_url.add(argvs.url)
+    resolvedNum =0
+    
+    while(added_url):
+        url_str = added_url.pop()
+        try : 
+            ip = resolveVideoURL(url_str)
+        except KeyError :
+            print "%s, error occured" % (url_str)
+            completed_url.add(url_str)  
+            continue
+          
+        if(++resolvedNum > 20):
+            break;
+        str_ip = str(ip)
+        if( str_ip in  ip_count):
+            ip_count[str_ip] += 1
+        else : 
+            ip_count[str_ip] = 1
+            
+
+        completed_url.add(url_str)  
+        
+        if(len(completed_url) + len(added_url) > 10000):
+            continue      
+        
+        soup = getSoup(url_str)
+        
+        #print soup.find("ul", {"id" : "watch-related"})
+        relatedList = soup.find("ul", {"id" : "watch-related"}).findAll("li", {"class":"video-list-item"} )
+        for related in relatedList :
+            #print "################################"
+            #print related
+            if(related):
+                full_url = "https://www.youtube.com"+ related.find("a")["href"][0:20];
+                if(full_url not in completed_url):
+                    added_url.add(full_url)
+    
+    #print ip_count
+    f = open("youtube_ip_count.txt", 'w')
+    for x in ip_count:
+        print (x) + ", " +str(ip_count[x])
+        f.write((x) + ", " +str(ip_count[x])+ "\n")    
     
     sys.exit(0)
 
